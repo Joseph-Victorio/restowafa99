@@ -28,11 +28,11 @@
                     </thead>
                     <tbody class="divide-y divide-gray-200">
                         @forelse ($orders as $order)
-                            <tr class="hover:bg-gray-50 transition 
-                                @if($order->status == 'pending') bg-yellow-50
-                                @elseif($order->status == 'cooked') bg-background/10
-                                @endif">
-                                
+                            <tr
+                                class="hover:bg-gray-50 transition 
+                                @if ($order->status == 'pending') bg-yellow-50
+                                @elseif($order->status == 'cooked') bg-background/10 @endif">
+
                                 <td class="px-5 py-3 font-semibold text-gray-700 text-center">#{{ $order->id }}</td>
                                 <td class="px-5 py-3">Meja {{ $order->meja_id }}</td>
 
@@ -52,17 +52,18 @@
                                 </td>
 
                                 <td class="px-5 py-3">
-                                    <span class="px-2 py-1 text-sm font-semibold rounded 
-                                        @if($order->status == 'pending') bg-yellow-100 text-yellow-500
-                                        @elseif($order->status == 'cooked') bg-background text-white
-                                        @endif">
+                                    <span
+                                        class="px-2 py-1 text-sm font-semibold rounded 
+                                        @if ($order->status == 'pending') bg-yellow-100 text-yellow-500
+                                        @elseif($order->status == 'cooked') bg-background text-white @endif">
                                         {{ ucfirst($order->status) }}
                                     </span>
                                 </td>
 
                                 <td class="px-5 py-3 text-center">
                                     @if ($order->status == 'pending')
-                                        <form method="POST" action="{{ route('orders.updateStatus', $order->id) }}" class="inline-flex items-center justify-center gap-2">
+                                        <form method="POST" action="{{ route('orders.updateStatus', $order->id) }}"
+                                            class="inline-flex items-center justify-center gap-2">
                                             @csrf
                                             @method('PATCH')
                                             <select name="status"
@@ -90,6 +91,9 @@
                         @endforelse
                     </tbody>
                 </table>
+            </div>
+            <div class="mt-6">
+                {{ $orders->links('pagination::tailwind') }}
             </div>
         </div>
     </div>

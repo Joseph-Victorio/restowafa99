@@ -12,23 +12,26 @@ use Midtrans\Snap;
 class OrderController extends Controller
 {
     public function index()
-{
-    $orders = \App\Models\Order::with('items')->orderByDesc('created_at')->get();
-    return view('orders.index', compact('orders'));
-}
+    {
+        $orders = \App\Models\Order::with('items')
+            ->orderByDesc('created_at')
+            ->paginate(10); 
 
-public function updateStatus(Request $request, $id)
-{
-    $request->validate([
-        'status' => 'required|in:pending,cooked,paid,cancelled'
-    ]);
+        return view('orders.index', compact('orders'));
+    }
 
-    $order = \App\Models\Order::findOrFail($id);
-    $order->status = $request->status;
-    $order->save();
+    public function updateStatus(Request $request, $id)
+    {
+        $request->validate([
+            'status' => 'required|in:pending,cooked,paid,cancelled'
+        ]);
 
-    return redirect()->route('orders.index')->with('success', 'Status berhasil diperbarui!');
-}
+        $order = \App\Models\Order::findOrFail($id);
+        $order->status = $request->status;
+        $order->save();
+
+        return redirect()->route('orders.index')->with('success', 'Status berhasil diperbarui!');
+    }
 
     public function checkout(Request $request)
     {
@@ -63,9 +66,9 @@ public function updateStatus(Request $request, $id)
 
             DB::commit();
 
-        
+
             Config::$serverKey = config('services.midtrans.server_key');
-            Config::$isProduction = false; 
+            Config::$isProduction = false;
             Config::$isSanitized = true;
             Config::$is3ds = true;
 
@@ -110,15 +113,14 @@ public function updateStatus(Request $request, $id)
         return response()->json(['status' => 'ok']);
     }
     public function riwayat(Request $request)
-{
-    $meja_id = session('meja_id') ?? $request->query('meja_id');
+    {
+        $meja_id = session('meja_id') ?? $request->query('meja_id');
 
-    $orders = Order::with('items')
-        ->where('meja_id', $meja_id)
-        ->latest()
-        ->first();
+        $orders = Order::with('items')
+            ->where('meja_id', $meja_id)
+            ->latest()
+            ->first();
 
-    return view('riwayat', compact('orders', 'meja_id'));
-}
-
+        return view('riwayat', compact('orders', 'meja_id'));
+    }
 }
