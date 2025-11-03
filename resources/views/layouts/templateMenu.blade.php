@@ -15,7 +15,7 @@
 
 <body class=" font-roboto bg-gray-100" x-data="window.cartAppInstance">
     {{-- desktop --}}
-    <nav class="shadow-xl hidden md:block bg-white">
+    <nav class="shadow-xl hidden md:block fixed bg-white top-0 left-0 w-full z-50">
         <div class="flex justify-between w-full px-10 py-5">
             <p class="font-bold text-background">RESTOWAFA99</p>
             <div class="flex gap-2 items-center
@@ -93,15 +93,18 @@
 
     </nav>
     {{-- mobile --}}
-    <nav class="shadow-xl  md:hidden bg-white">
+    <nav class="shadow-xl md:hidden bg-white fixed top-0 left-0 w-full z-50">
         <div class="flex justify-between w-full px-10 py-5">
             <p class="font-bold text-background">RESTOWAFA99</p>
             <div class="flex gap-2 items-center
             ">
                 <div class="relative">
-                    <div x-if="cart.length > 0" class="absolute left-0">
+                    <template x-if="cart.length !=0">
+                        <div class="absolute right-[-5px] top-[-5px]">
+                            <i class="fa-solid fa-circle-exclamation text-red-500 text-sm"></i>
 
-                    </div>
+                        </div>
+                    </template>
                     <button @click="openCart=true">
                         <i class="fa-solid fa-bag-shopping text-background text-2xl "></i>
                     </button>
@@ -239,125 +242,124 @@
 
     </div>
 
-    <div class="p-4 z-0 relative ">
+    <div class="p-4 z-0 relative mt-12 ">
         @yield('content')
     </div>
 
     <script>
-        window.cartAppInstance = {
-            openModal: false,
-            openCart: false,
-            cart: JSON.parse(localStorage.getItem('cart') || '[]'),
-            showNotif: false,
-            notifMessage: '',
+    window.cartAppInstance = {
+        openModal: false,
+        openCart: false,
+        mejaId: '{{ $meja_id }}',
+        get cartKey() {
+            return `cart_meja_${this.mejaId}`;
+        },
+        cart: JSON.parse(localStorage.getItem(`cart_meja_{{ $meja_id }}`) || '[]'),
+        showNotif: false,
+        notifMessage: '',
 
-            get totalHarga() {
-                return this.cart.reduce((sum, item) => sum + item.harga * item.qty, 0);
-            },
+        get totalHarga() {
+            return this.cart.reduce((sum, item) => sum + item.harga * item.qty, 0);
+        },
 
-            saveCart() {
-                localStorage.setItem('cart', JSON.stringify(this.cart));
-            },
+        saveCart() {
+            localStorage.setItem(this.cartKey, JSON.stringify(this.cart));
+        },
 
-            addToCart(item) {
-                const existing = this.cart.find(i => i.id === item.id);
-                if (existing) {
-                    existing.qty++;
-                } else {
-                    this.cart.push({
-                        ...item,
-                        qty: 1
-                    });
-                }
+        addToCart(item) {
+            const existing = this.cart.find(i => i.id === item.id);
+            if (existing) {
+                existing.qty++;
+            } else {
+                this.cart.push({ ...item, qty: 1 });
+            }
+            this.saveCart();
 
+            this.notifMessage = `${item.nama} berhasil ditambahkan!`;
+            this.showNotif = true;
+            setTimeout(() => this.showNotif = false, 2000);
+            this.openCart = true;
+        },
+
+        increaseQty(id) {
+            const item = this.cart.find(i => i.id === id);
+            if (item) {
+                item.qty++;
                 this.saveCart();
+            }
+        },
 
-                this.notifMessage = `${item.nama} berhasil ditambahkan!`;
-                this.showNotif = true;
-                setTimeout(() => this.showNotif = false, 2000);
-                this.openCart = true;
-            },
-
-            increaseQty(id) {
-                const item = this.cart.find(i => i.id === id);
-                if (item) {
-                    item.qty++;
-                    this.saveCart();
+        decreaseQty(id) {
+            const item = this.cart.find(i => i.id === id);
+            if (item) {
+                item.qty--;
+                if (item.qty <= 0) {
+                    this.cart = this.cart.filter(i => i.id !== id);
                 }
-            },
+                this.saveCart();
+            }
+        },
 
-            decreaseQty(id) {
-                const item = this.cart.find(i => i.id === id);
-                if (item) {
-                    item.qty--;
-                    if (item.qty <= 0) {
-                        this.cart = this.cart.filter(i => i.id !== id);
-                    }
-                    this.saveCart();
-                }
-            },
+        clearCart() {
+            this.cart = [];
+            localStorage.removeItem(this.cartKey);
+        },
 
-            clearCart() {
-                this.cart = [];
-                localStorage.removeItem('cart');
-            },
-            checkout() {
-                fetch('{{ route('checkout') }}', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'X-CSRF-TOKEN': '{{ csrf_token() }}'
-                        },
-                        body: JSON.stringify({
-                            meja_id: '{{ $meja_id }}',
-                            cart: this.cart
-                        })
-                    })
-                    .then(res => res.json())
-                    .then(async data => {
-                        if (data.success) {
-                            this.notifMessage = 'Memproses pembayaran...';
+        checkout() {
+            fetch('{{ route('checkout') }}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                },
+                body: JSON.stringify({
+                    meja_id: this.mejaId,
+                    cart: this.cart
+                })
+            })
+            .then(res => res.json())
+            .then(async data => {
+                if (data.success) {
+                    this.notifMessage = 'Memproses pembayaran...';
+                    this.showNotif = true;
+
+                    await this.loadSnap();
+                    window.snap.pay(data.snapToken, {
+                        onSuccess: (result) => {
+                            this.clearCart();
+                            this.notifMessage = 'Pembayaran Berhasil!';
                             this.showNotif = true;
-
-                            await this.loadSnap();
-                            window.snap.pay(data.snapToken, {
-                                onSuccess: (result) => {
-                                    this.clearCart();
-                                    this.notifMessage = 'Pembayaran Berhasil!';
-                                    this.showNotif = true;
-                                    setTimeout(() => {
-                                        window.location.href =
-                                            "{{ route('riwayat', ['meja_id' => $meja_id]) }}";
-                                    }, 1500);
-                                },
-                                onPending: () => {
-                                    this.notifMessage = 'Menunggu Pembayaran...';
-                                },
-                                onError: () => {
-                                    this.notifMessage = 'Terjadi kesalahan pembayaran.';
-                                }
-                            });
-                        } else {
-                            alert('Gagal checkout: ' + data.message);
+                            setTimeout(() => {
+                                window.location.href = "{{ route('riwayat', ['meja_id' => $meja_id]) }}";
+                            }, 1500);
+                        },
+                        onPending: () => {
+                            this.notifMessage = 'Menunggu Pembayaran...';
+                        },
+                        onError: () => {
+                            this.notifMessage = 'Terjadi kesalahan pembayaran.';
                         }
                     });
-            },
-            async loadSnap() {
-                if (!window.snap) {
-                    await new Promise(resolve => {
-                        const script = document.createElement('script');
-                        script.src = 'https://app.sandbox.midtrans.com/snap/snap.js';
-                        script.setAttribute('data-client-key',
-                            '{{ config('services.midtrans.clientKey') }}');
-                        script.onload = resolve;
-                        document.head.appendChild(script);
-                    });
+                } else {
+                    alert('Gagal checkout: ' + data.message);
                 }
+            });
+        },
+
+        async loadSnap() {
+            if (!window.snap) {
+                await new Promise(resolve => {
+                    const script = document.createElement('script');
+                    script.src = 'https://app.sandbox.midtrans.com/snap/snap.js';
+                    script.setAttribute('data-client-key', '{{ config('services.midtrans.clientKey') }}');
+                    script.onload = resolve;
+                    document.head.appendChild(script);
+                });
             }
+        }
+    };
+</script>
 
-
-        };
-    </script>
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
 </body>
 

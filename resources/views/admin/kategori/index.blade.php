@@ -5,7 +5,7 @@
         <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-8">
             <h2 class="text-2xl font-bold text-gray-800 flex items-center gap-2">
                 <i class="fa-solid fa-tags text-background"></i>
-                <span>Daftar Kategori</span>
+                <span>List Kategori</span>
             </h2>
 
             <a href="{{ route('kategori.create') }}"

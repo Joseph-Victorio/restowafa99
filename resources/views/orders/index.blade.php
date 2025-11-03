@@ -3,7 +3,7 @@
         <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-8">
             <h2 class="text-2xl font-bold text-gray-800 flex items-center gap-2">
                 <i class="fa-solid fa-clipboard-list text-background"></i>
-                <span>Daftar Pesanan</span>
+                <span>List Pesanan</span>
             </h2>
         </div>
 
