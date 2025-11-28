@@ -59,11 +59,11 @@
             </select>
             <a href="{{ route('dashboard.laporan', ['year' => now()->year]) }}"
                 class="px-4 py-2 text-sm bg-green-600 text-white rounded">
-                Download Laporan Pendapatan (PDF)
+                Download Laporan Tahunan 
             </a>
             <a href="{{ route('dashboard.laporan.bulanan', ['month' => now()->month, 'year' => now()->year]) }}"
                 class="px-4 py-2 text-sm bg-green-600 text-white rounded">
-                Download Laporan Bulanan (PDF)
+                Download Laporan Bulanan 
             </a>
 
 
