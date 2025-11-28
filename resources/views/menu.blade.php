@@ -8,12 +8,10 @@
     <title>@yield('title')</title>
     @vite('resources/css/app.css')
 
-    <script src="https://app.sandbox.midtrans.com/snap/snap.js"
-        data-client-key="{{ config('services.midtrans.client_key') }}"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
 </head>
 
-<body class=" font-roboto bg-gray-100" x-data="window.cartAppInstance">
+<body>
     {{-- desktop --}}
     <nav class="shadow-xl hidden md:block fixed bg-white top-0 left-0 w-full z-50">
         <div class="flex justify-between w-full px-10 py-5">
@@ -27,11 +25,11 @@
 
                         </div>
                     </template>
-                    <button @click="openCart=true">
+                    <button onclick="openScanModal()">
                         <i class="fa-solid fa-bag-shopping text-background text-2xl "></i>
                     </button>
                 </div>
-                <p> Meja: {{ $meja_id }}</p>
+
             </div>
         </div>
         <div x-data="{
@@ -105,11 +103,10 @@
 
                         </div>
                     </template>
-                    <button @click="openCart=true">
+                    <button onclick="openScanModal()">
                         <i class="fa-solid fa-bag-shopping text-background text-2xl "></i>
                     </button>
                 </div>
-                <p>Meja: {{ $meja_id }}</p>
             </div>
         </div>
         <div x-data="{
@@ -171,196 +168,53 @@
         </div>
 
     </nav>
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-2 md:gap-5 mt-20 md:p-4 ">
+        @foreach ($menus as $menu)
+            <div
+                class="p-4 mt-5 border-2 border-transparent rounded hover:border-background shadow text-white md:w-[400px] md:h-[200px] h-[150px] flex gap-5 items-center bg-white">
+                <img src="{{ $menu->foto }}" alt="{{ $menu->foto }}"
+                    class="w-[125px] h-[125px]  object-cover rounded">
+                <div class="text-background w-full">
+                    <h2 class="text-lg md:text-xl font-bold">{{ $menu->nama }}</h2>
+                    <p class="text-sm text-gray-400">{{ $menu->deskripsi }}</p>
+                    <div class="md:h-10"></div>
+                    <div class="flex items-center justify-between w-full mt-5">
+                        <p class="md:text-xl text-[#2b2d2c]">Rp {{ number_format($menu->harga, 0, '.', '.') }}</p>
+                        <button
+                            class="bg-background rounded-full w-7 h-7 p-2 hover:cursor-pointer group flex justify-center"
+                            onclick="openScanModal()">
+                            <i class="fa-solid fa-plus text-sm group-hover:text-hover mx-auto text-primary"></i>
+                        </button>
 
-
-    <div x-show="openCart" x-transition:enter="transform transition ease-out duration-300"
-        x-transition:enter-start="translate-x-full opacity-0" x-transition:enter-end="translate-x-0 opacity-100"
-        x-transition:leave="transform transition ease-in duration-300"
-        x-transition:leave-start="translate-x-0 opacity-100" x-transition:leave-end="translate-x-full opacity-0"
-        class="fixed top-0 right-0 h-full w-full sm:w-1/2 md:w-1/3 bg-white shadow-xl z-50 p-5">
-
-        <div class="flex justify-between items-center mb-4">
-            <button @click="openCart = false" class="text-gray-500 hover:text-black">
-                <i class="fa-solid fa-xmark text-2xl"></i>
-            </button>
-        </div>
-
-        <template x-if="cart.length === 0">
-            <div class="text-center">
-                <img src="{{ asset('images/empty_cart.png') }}" alt="" class="w-[300px] mx-auto">
-                <p class="text-2xl text-black">Pesan Makan Yuk!</p>
-                <p class="text-gray-400 text-sm">Tambahkan makanan ke keranjang mu dan pesan disini</p>
-            </div>
-        </template>
-
-        <template x-for="item in cart" :key="item.id">
-            <div class="flex justify-between items-center border-b py-3 ">
-                <div class="flex items-center gap-3">
-                    <img :src="item.foto" alt="" class="w-12 h-12 object-cover rounded-md">
-                    <div>
-                        <span x-text="item.nama" class="font-medium block"></span>
-                        <span x-text="`Rp ${(item.harga * item.qty).toLocaleString()}`"
-                            class="text-gray-600 text-sm"></span>
                     </div>
                 </div>
-                <div class="flex items-center gap-2">
-                    <button @click="decreaseQty(item.id)"
-                        class="bg-gray-200 text-gray-700 px-2 rounded hover:bg-gray-300">-</button>
-                    <span x-text="item.qty" class="w-6 text-center"></span>
-                    <button @click="increaseQty(item.id)"
-                        class="bg-background text-white px-2 rounded hover:bg-background/80">+</button>
-                </div>
             </div>
-        </template>
-
-        <template x-if="cart.length > 0">
-            <div class="mt-6 border-t pt-4">
-                <div class="flex justify-between text-lg font-semibold">
-                    <span>Total:</span>
-                    <span x-text="`Rp ${totalHarga.toLocaleString()}`"></span>
-                </div>
-                <button @click="clearCart"
-                    class="mt-4 bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600 transition">
-                    Hapus Semua
-                </button>
-
-                <div class="mt-10 w-full">
-                    <button @click="checkout()"
-                        class="bg-background w-full text-white px-4 py-2 rounded hover:bg-background/80 ease-in-out transition-colors duration-300 ">
-                        Pesan Sekarang
-                    </button>
-                </div>
+        @endforeach
+    </div>
+    <div id="scanModal" class="hidden fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+        <div class="bg-white rounded-xl p-6 w-80 text-center shadow-xl">
+            <h2 class="text-xl font-semibold mb-3">Perhatian</h2>
+            <div class="w-[200px] mx-auto">
+                <img src="{{ asset('images/warn.png') }}" alt="" class="w-full mx-auto">
             </div>
+            <p class="text-gray-700 mb-4 font-bold">Harap scan barcode yang ada dimeja terlebih dahulu.</p>
 
-        </template>
+            <button onclick="closeScanModal()"
+                class="bg-background text-white w-full py-2 rounded-lg hover:bg-background/80 transition">
+                Oke
+            </button>
+        </div>
     </div>
-
-    <div x-show="showNotif" x-transition
-        class="fixed top-5 right-5 bg-green-500 text-white px-4 py-2 rounded shadow-lg z-50" x-text="notifMessage">
-    </div>
-
-
-    </div>
-
-    <div class="p-4 z-0 relative mt-12 ">
-        @yield('content')
-    </div>
-
     <script>
-    window.cartAppInstance = {
-        openModal: false,
-        openCart: false,
-        mejaId: '{{ $meja_id }}',
-        get cartKey() {
-            return `cart_meja_${this.mejaId}`;
-        },
-        cart: JSON.parse(localStorage.getItem(`cart_meja_{{ $meja_id }}`) || '[]'),
-        showNotif: false,
-        notifMessage: '',
-
-        get totalHarga() {
-            return this.cart.reduce((sum, item) => sum + item.harga * item.qty, 0);
-        },
-
-        saveCart() {
-            localStorage.setItem(this.cartKey, JSON.stringify(this.cart));
-        },
-
-        addToCart(item) {
-            const existing = this.cart.find(i => i.id === item.id);
-            if (existing) {
-                existing.qty++;
-            } else {
-                this.cart.push({ ...item, qty: 1 });
-            }
-            this.saveCart();
-
-            this.notifMessage = `${item.nama} berhasil ditambahkan!`;
-            this.showNotif = true;
-            setTimeout(() => this.showNotif = false, 2000);
-            this.openCart = true;
-        },
-
-        increaseQty(id) {
-            const item = this.cart.find(i => i.id === id);
-            if (item) {
-                item.qty++;
-                this.saveCart();
-            }
-        },
-
-        decreaseQty(id) {
-            const item = this.cart.find(i => i.id === id);
-            if (item) {
-                item.qty--;
-                if (item.qty <= 0) {
-                    this.cart = this.cart.filter(i => i.id !== id);
-                }
-                this.saveCart();
-            }
-        },
-
-        clearCart() {
-            this.cart = [];
-            localStorage.removeItem(this.cartKey);
-        },
-
-        checkout() {
-            fetch('{{ route('checkout') }}', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
-                },
-                body: JSON.stringify({
-                    meja_id: this.mejaId,
-                    cart: this.cart
-                })
-            })
-            .then(res => res.json())
-            .then(async data => {
-                if (data.success) {
-                    this.notifMessage = 'Memproses pembayaran...';
-                    this.showNotif = true;
-
-                    await this.loadSnap();
-                    window.snap.pay(data.snapToken, {
-                        onSuccess: (result) => {
-                            this.clearCart();
-                            this.notifMessage = 'Pembayaran Berhasil!';
-                            this.showNotif = true;
-                            setTimeout(() => {
-                                window.location.href = "{{ route('riwayat', ['meja_id' => $meja_id]) }}";
-                            }, 1500);
-                        },
-                        onPending: () => {
-                            this.notifMessage = 'Menunggu Pembayaran...';
-                        },
-                        onError: () => {
-                            this.notifMessage = 'Terjadi kesalahan pembayaran.';
-                        }
-                    });
-                } else {
-                    alert('Gagal checkout: ' + data.message);
-                }
-            });
-        },
-
-        async loadSnap() {
-            if (!window.snap) {
-                await new Promise(resolve => {
-                    const script = document.createElement('script');
-                    script.src = 'https://app.sandbox.midtrans.com/snap/snap.js';
-                    script.setAttribute('data-client-key', '{{ config('services.midtrans.client_key') }}');
-                    script.onload = resolve;
-                    document.head.appendChild(script);
-                });
-            }
+        function openScanModal() {
+            document.getElementById('scanModal').classList.remove('hidden');
         }
-    };
-</script>
 
-    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+        function closeScanModal() {
+            document.getElementById('scanModal').classList.add('hidden');
+        }
+    </script>
+
 </body>
 
 </html>

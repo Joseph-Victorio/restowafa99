@@ -3,14 +3,14 @@
 @section('title', 'Riwayat Pesanan')
 
 @section('content')
-    <div class="max-w-3xl mx-auto bg-white shadow-md rounded-lg p-6">
+    <div class="max-w-3xl mx-auto bg-white shadow-md rounded-lg p-6 mt-20">
         <h2 class="text-2xl font-bold mb-4 text-background">
             Riwayat Pesanan Meja {{ $meja_id }}
         </h2>
 
         @if ($orders)
             @if ($orders->status === 'pending')
-                <div class="border-b border-gray-200 pb-3 mb-3">
+                <div class="border-b border-gray-200 pb-3 mb-3 ">
                     <div class="flex justify-center mb-6">
                         <img src="{{ asset('images/food_cooking.png') }}" alt="Sedang dimasak" class="w-[250px]">
                     </div>

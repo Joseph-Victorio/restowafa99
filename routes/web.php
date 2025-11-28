@@ -14,9 +14,7 @@ Route::post('/midtrans/callback', [OrderController::class, 'callback'])->name('m
 Route::get('/riwayat', [OrderController::class, 'riwayat'])->name('riwayat');
 
 
-Route::get('/', function () {
-    return view('welcomeMenu');
-});
+Route::get('/', [FilterMakanan::class, 'menu'])->name('menu');
 
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
@@ -25,6 +23,12 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     Route::get('/orders', [OrderController::class, 'index'])->name('orders.index');
     Route::patch('/orders/{order}/status', [OrderController::class, 'updateStatus'])->name('orders.updateStatus');
+
+    Route::get('/dashboard/revenue', [DashboardController::class, 'getRevenue']);
+    Route::get('/dashboard/laporan', [DashboardController::class, 'downloadLaporan'])
+        ->name('dashboard.laporan');
+    Route::get('/dashboard/laporan/bulanan', [DashboardController::class, 'downloadLaporanBulanan'])
+        ->name('dashboard.laporan.bulanan');
 });
 
 Route::middleware('auth')->group(function () {

@@ -22,7 +22,8 @@
                             <th class="px-5 py-3 w-2/12">No. Meja</th>
                             <th class="px-5 py-3 w-4/12">Daftar Menu</th>
                             <th class="px-5 py-3 w-2/12">Total Harga</th>
-                            <th class="px-5 py-3 w-1/12">Status</th>
+                            <th class="px-5 py-3 w-1/12">Status Pesanan</th>
+                            <th class="px-5 py-3 w-1/12">Status Pembayaran</th>
                             <th class="px-5 py-3 w-2/12 text-center">Aksi</th>
                         </tr>
                     </thead>
@@ -59,17 +60,34 @@
                                         {{ ucfirst($order->status) }}
                                     </span>
                                 </td>
+                                <td class="px-2 py-3">
+                                    <span
+                                        class="px-2 py-1 w-full text-sm font-semibold rounded 
+                                        @if ($order->status_pembayaran == 'belum_dibayar') bg-yellow-100 text-yellow-500
+                                        @elseif($order->status_pembayaran == 'sudah_dibayar') bg-background text-white @endif">
+                                        @if ($order->status_pembayaran == 'belum_dibayar')
+                                            Belum Dibayar
+                                        @elseif ($order->status_pembayaran == 'sudah_dibayar')
+                                            Sudah Dibayar
+                                        @endif
+                                    </span>
+                                </td>
 
                                 <td class="px-5 py-3 text-center">
                                     @if ($order->status == 'pending')
                                         <form method="POST" action="{{ route('orders.updateStatus', $order->id) }}"
-                                            class="inline-flex items-center justify-center gap-2">
+                                            class="flex flex-col gap-5 items-center justify-center gap-2">
                                             @csrf
                                             @method('PATCH')
                                             <select name="status"
                                                 class="border-gray-300 rounded-md shadow-sm px-2 py-1 text-sm focus:ring-background focus:border-background">
                                                 <option value="pending" selected>Pending</option>
                                                 <option value="cooked">Cooked</option>
+                                            </select>
+                                            <select name="status_pembayaran"
+                                                class="border-gray-300 rounded-md shadow-sm px-2 py-1 text-sm focus:ring-background focus:border-background">
+                                                <option value="belum_dibayar" selected>Belum Dibayar</option>
+                                                <option value="sudah_dibayar">Sudah Dibayar</option>
                                             </select>
                                             <button type="submit"
                                                 class="bg-background text-white px-3 py-1 rounded-md hover:bg-background/80 transition">

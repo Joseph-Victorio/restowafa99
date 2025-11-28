@@ -15,7 +15,7 @@ class OrderController extends Controller
     {
         $orders = \App\Models\Order::with('items')
             ->orderByDesc('created_at')
-            ->paginate(10); 
+            ->paginate(5);
 
         return view('orders.index', compact('orders'));
     }
@@ -23,15 +23,18 @@ class OrderController extends Controller
     public function updateStatus(Request $request, $id)
     {
         $request->validate([
-            'status' => 'required|in:pending,cooked,paid,cancelled'
+            'status' => 'required|in:pending,cooked,paid,cancelled',
+            'status_pembayaran' => 'required|in:belum_dibayar,sudah_dibayar'
         ]);
 
         $order = \App\Models\Order::findOrFail($id);
         $order->status = $request->status;
+        $order->status_pembayaran = $request->status_pembayaran;
         $order->save();
 
         return redirect()->route('orders.index')->with('success', 'Status berhasil diperbarui!');
     }
+    
 
     public function checkout(Request $request)
     {
@@ -48,33 +51,39 @@ class OrderController extends Controller
         $total = collect($cart)->sum(fn($i) => $i['harga'] * $i['qty']);
 
         DB::beginTransaction();
+
         try {
+            $kode_order = 'WAFA-' . now()->format('YmdHis') . rand(10, 99);
+
+    
             $order = Order::create([
                 'meja_id' => $data['meja_id'],
                 'total_harga' => $total,
                 'status' => 'pending',
+                'kode_order' => $kode_order, 
             ]);
+
 
             foreach ($cart as $item) {
                 OrderItem::create([
-                    'order_id' => $order->id,
+                    'order_id' => $order->id,  
                     'nama_menu' => $item['nama'],
-                    'qty' => $item['qty'],
+                    'qty' => $item['qty'],  
                     'harga' => $item['harga'],
                 ]);
             }
 
             DB::commit();
 
-
             Config::$serverKey = config('services.midtrans.server_key');
             Config::$isProduction = false;
             Config::$isSanitized = true;
             Config::$is3ds = true;
 
+
             $params = [
                 'transaction_details' => [
-                    'order_id' => $order->id,
+                    'order_id' => $kode_order, 
                     'gross_amount' => $total,
                 ],
                 'customer_details' => [
@@ -94,6 +103,7 @@ class OrderController extends Controller
             return response()->json(['success' => false, 'message' => $e->getMessage()]);
         }
     }
+
 
     public function callback(Request $request)
     {

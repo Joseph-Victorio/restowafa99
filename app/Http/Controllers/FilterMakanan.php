@@ -21,4 +21,13 @@ class FilterMakanan extends Controller
       return view('welcomeMenu', compact('menus', 'kategori', 'meja_id'));
     }
 
+    public function menu(Request $request){
+      $kategori = $request->get('kategori');
+
+      $menus = Menu::when($kategori, function($query, $kategori){
+        return $query->where('kategori', $kategori);
+      })->get();
+
+      return view('menu', compact('menus', 'kategori',));
+    }
 }
