@@ -29,7 +29,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
         ->name('dashboard.laporan');
     Route::get('/dashboard/laporan/bulanan', [DashboardController::class, 'downloadLaporanBulanan'])
         ->name('dashboard.laporan.bulanan');
+    Route::get('/dashboard/laporan-bulanan', [DashboardController::class, 'downloadLaporanBulanan'])
+        ->name('dashboard.laporan.bulanan');
 });
+
 
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');

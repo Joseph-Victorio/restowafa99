@@ -59,12 +59,13 @@
             </select>
             <a href="{{ route('dashboard.laporan', ['year' => now()->year]) }}"
                 class="px-4 py-2 text-sm bg-green-600 text-white rounded">
-                Download Laporan Tahunan 
+                Download Laporan Tahunan
             </a>
-            <a href="{{ route('dashboard.laporan.bulanan', ['month' => now()->month, 'year' => now()->year]) }}"
+            <a :href="`/dashboard/laporan-bulanan?month=${month}&year=${year}`"
                 class="px-4 py-2 text-sm bg-green-600 text-white rounded">
-                Download Laporan Bulanan 
+                Download Laporan Bulanan
             </a>
+
 
 
         </div>
