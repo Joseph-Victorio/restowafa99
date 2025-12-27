@@ -21,8 +21,15 @@ class DashboardController extends Controller
         $todayOrders = Order::whereDate('created_at', $today)->count();
 
         $todayRevenue = Order::whereDate('created_at', $today)->where('status_pembayaran', 'sudah_dibayar')->sum('total_harga');
-        $monthRevenue = Order::whereDate('created_at', $month)->where('status_pembayaran', 'sudah_dibayar')->sum('total_harga');
-        $yearRevenue = Order::whereDate('created_at', $year)->where('status_pembayaran', 'sudah_dibayar')->sum('total_harga');
+        $monthRevenue = Order::whereMonth('created_at', now()->month)
+            ->whereYear('created_at', now()->year)
+            ->where('status_pembayaran', 'sudah_dibayar')
+            ->sum('total_harga');
+
+        $yearRevenue = Order::whereYear('created_at', now()->year)
+            ->where('status_pembayaran', 'sudah_dibayar')
+            ->sum('total_harga');
+
 
         $recentOrders = Order::with('items')
             ->latest()
@@ -146,7 +153,7 @@ class DashboardController extends Controller
             'days' => $days,
             'revenues' => $revenues,
             'totalMonthlyRevenue' => $totalMonthlyRevenue,
-        ])->setPaper('A4', 'portrait'); 
+        ])->setPaper('A4', 'portrait');
         return $pdf->download("Laporan_Pendapatan_{$month}_{$year}.pdf");
     }
 }
